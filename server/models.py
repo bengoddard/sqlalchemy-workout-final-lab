@@ -11,7 +11,7 @@ class Exercise(db.Model):
     category = db.Column(db.String)
     equipment_needed = db.Column(db.Boolean)
 
-    workout_exercises = db.relationship('WorkoutExercise', back_populates='exercise')
+    workout_exercises = db.relationship('WorkoutExercises', back_populates='exercise')
 
     workouts = db.relationship("Workout", secondary="workout_exercises", back_populates='exercises')
 
@@ -35,7 +35,7 @@ class Workout(db.Model):
     duration_minutes = db.Column(db.Integer, nullable=False)
     notes = db.Column(db.Text)
 
-    workout_exercises = db.relationship('WorkoutExercise', back_populates='workout')
+    workout_exercises = db.relationship('WorkoutExercises', back_populates='workout')
 
     exercises = db.relationship("Exercise", secondary="workout_exercises", back_populates='workouts')
 
