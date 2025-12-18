@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import validates
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, validate
 db = SQLAlchemy()
 
 # Define Models here
@@ -29,18 +29,18 @@ class Exercise(db.Model):
         return Exname
 
 class ExerciseSchema(Schema):
-    id = fields.Integer()
-    name = fields.String()
-    category = fields.String()
+    id = fields.Integer(dump_only=True)
+    name = fields.String(required=True, validate=validate.Length(min=1, error="Name must be present.")))
+    category = fields.String(required=True)
     equipment_needed = fields.Boolean()
 
     workout_exercises = fields.List(fields.Nested(
         lambda: WorkoutExerciseSchema(exclude=("exercise",))
-    ))
+    ), dump_only=True)
 
     workouts = fields.List(fields.Nested(
         lambda: WorkoutSchema(exclude=("exercises", "workout_exercises",))
-    ))
+    ), dump_only=True)
 
 class Workout(db.Model):
     __tablename__ = 'workouts'
@@ -66,14 +66,14 @@ class Workout(db.Model):
         return value
 
 class WorkoutSchema(Schema):
-    id = fields.Integer()
-    date = fields.Date()
-    duration_minutes = fields.Integer()
+    id = fields.Integer(dump_only=True)
+    date = fields.Date(required=True)
+    duration_minutes = fields.Integer(required=True, validate=validate.Range(min=1, error="Duration must be a positive integer."))
     notes = fields.String()
 
     workout_exercises = fields.List(fields.Nested(
         lambda: WorkoutExerciseSchema(exclude=("workout",))
-    ))
+    ), dump_only=True)
 
 
 class WorkoutExercises(db.Model):
@@ -96,10 +96,10 @@ class WorkoutExercises(db.Model):
 
 
 class WorkoutExerciseSchema(Schema):
-    id = fields.Integer()
-    reps = fields.Integer()
-    sets = fields.Integer()
-    duration_seconds = fields.Integer()
+    id = fields.Integer(dump_only=True)
+    reps = fields.Integer(validate=validate.Range(min=0, error="Reps must be non-negative."))
+    sets = fields.Integer(validate=validate.Range(min=1, error="Sets must be a positive integer."))
+    duration_seconds = fields.Integer(validate=validate.Range(min=0))
 
-    exercise = fields.Nested(lambda: ExerciseSchema(exclude=("workout_exercises", "workouts",)))
-    workout = fields.Nested(lambda: WorkoutSchema(exclude=("workout_exercises",)))
+    exercise = fields.Nested(lambda: ExerciseSchema(exclude=("workout_exercises", "workouts",)), dump_only=True)
+    workout = fields.Nested(lambda: WorkoutSchema(exclude=("workout_exercises",)), dump_only=True)
