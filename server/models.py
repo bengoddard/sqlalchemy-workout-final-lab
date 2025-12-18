@@ -24,3 +24,14 @@ class Workout(db.Model):
 
     def __repr__(self):
         return f"<Workout(id={self.id}, date={self.date}, duration={self.duration_minutes}, notes={self.notes}m)>"
+    
+
+class WorkoutExercises(db.Model):
+    __tablename__ = 'workoutexercises'
+
+    id = db.Column(db.Integer, primary_key=True)
+    workout_id = db.Column(db.Integer, db.ForeignKey('workouts.id'))
+    exercise_id = db.Column(db.Integer, db.ForeignKey('exercises.id'))
+    reps = db.Column(db.Integer)
+    sets = db.Column(db.Integer)
+    duration_seconds = db.Column(db.Integer)
