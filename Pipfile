@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+Flask = "2.2.2"
+Flask-Migrate = "3.1.0"
+flask-sqlalchemy = "3.0.3"
+Werkzeug = "2.2.2"
+importlib-metadata = "6.0.0"
+importlib-resources = "5.10.0"
+ipdb = "0.13.9"
+marshmallow = "3.20.1"
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"
