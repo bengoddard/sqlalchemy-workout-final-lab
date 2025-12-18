@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import validates
+from marshmallow import Schema, fields
 db = SQLAlchemy()
 
 # Define Models here
@@ -27,6 +28,20 @@ class Exercise(db.Model):
             raise ValueError("Name must be unique.")
         return Exname
 
+class ExerciseSchema(Schema):
+    id = fields.Integer()
+    name = fields.String()
+    category = fields.String()
+    equipment_needed = fields.Boolean()
+
+    workout_exercises = fields.List(fields.Nested(
+        lambda: WorkoutExerciseSchema(exclude=("exercise",))
+    ))
+
+    workouts = fields.List(fields.Nested(
+        lambda: WorkoutSchema(exclude=("exercises", "workout_exercises",))
+    ))
+
 class Workout(db.Model):
     __tablename__ = 'workouts'
 
@@ -50,6 +65,16 @@ class Workout(db.Model):
             raise ValueError("Duration must be a positive integer.")
         return value
 
+class WorkoutSchema(Schema):
+    id = fields.Integer()
+    date = fields.Date()
+    duration_minutes = fields.Integer()
+    notes = fields.String()
+
+    workout_exercises = fields.List(fields.Nested(
+        lambda: WorkoutExerciseSchema(exclude=("workout",))
+    ))
+
 
 class WorkoutExercises(db.Model):
     __tablename__ = 'workout_exercises'
@@ -68,3 +93,13 @@ class WorkoutExercises(db.Model):
         db.CheckConstraint('sets > 0', name='check_sets_positive'),
         db.CheckConstraint('reps >= 0', name='check_reps_non_negative'),
     )
+
+
+class WorkoutExerciseSchema(Schema):
+    id = fields.Integer()
+    reps = fields.Integer()
+    sets = fields.Integer()
+    duration_seconds = fields.Integer()
+
+    exercise = fields.Nested(lambda: ExerciseSchema(exclude=("workout_exercises", "workouts",)))
+    workout = fields.Nested(lambda: WorkoutSchema(exclude=("workout_exercises",)))
